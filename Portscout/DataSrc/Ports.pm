@@ -217,10 +217,12 @@ sub BuildDB
 
 	@cats = split /\s+/, Portscout::Make->Make($settings{ports_dir}, 'SUBDIR');
 
-	$mfi = stat $settings{ports_dir} . '/MOVED'
-		or die "Couldn't stat MOVED file";
+	if ($self->{opts}->{type} eq 'freebsd') {
+		$mfi = stat $settings{ports_dir} . '/MOVED'
+			or die "Couldn't stat MOVED file";
 
-	$move_ports = 1 if ($mfi->mtime > $lastbuild);
+		    $move_ports = 1 if ($mfi->mtime > $lastbuild);
+	}
 
 	# If the user has specified a maintainer restriction
 	# list, try to get to get the list of desired ports
@@ -361,11 +363,14 @@ sub BuildDB
 
 	if ($num_ports) {
 		print "\n" unless ($settings{quiet});
-		print "Cross-referencing master/slave ports...\n";
 
-		unless ($settings{precious_data}) {
-			$sths{portdata_masterport_str2id}->execute;
-			$sths{portdata_masterport_enslave}->execute;
+		if ($self->{opts}->{type} eq 'freebsd') {
+			print "Cross-referencing master/slave ports...\n";
+
+			unless ($settings{precious_data}) {
+				$sths{portdata_masterport_str2id}->execute;
+				$sths{portdata_masterport_enslave}->execute;
+			}
 		}
 	}
 
